@@ -10,12 +10,12 @@ import java.util.Map;
 import com.google.gson.Gson;
 
 public class ApiRequest {
+    private static final String API_URL = "https://v6.exchangerate-api.com/v6/1405ded8acf14eafe7285949/latest/USD";
+    private Map<String, Double> conversionRates;
 
-    private static final String API_KEY = "https://v6.exchangerate-api.com/v6/1405ded8acf14eafe7285949/latest/USD";
-
-    public static void main(String[] args) {
+    public void fetchRates() {
         HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder().uri(URI.create(API_KEY)).build();
+        HttpRequest request = HttpRequest.newBuilder().uri(URI.create(API_URL)).build();
 
         try {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
@@ -23,13 +23,18 @@ public class ApiRequest {
                 String responseBody = response.body();
                 Gson gson = new Gson();
                 ApiResponse apiResponse = gson.fromJson(responseBody, ApiResponse.class);
-                System.out.println(apiResponse);
+                this.conversionRates = apiResponse.getConversionRates();
+
             } else {
-                System.out.println("Error: " + response.statusCode());
+                System.out.println("Erro ao obter taxas de câmbio: " + response.statusCode());
             }
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    public Map<String, Double> getConversionRates() {
+        return conversionRates;
     }
 }
 
@@ -37,7 +42,6 @@ class ApiResponse {
     private String base_code;
     private Map<String, Double> conversion_rates;
 
-    // Getters e Setters
     public String getBaseCode() {
         return base_code;
     }
